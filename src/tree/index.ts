@@ -1,13 +1,9 @@
 import { commands, TreeItemCollapsibleState, window } from "vscode";
-
 import { Doc } from "../engine/doc";
-import { Format } from "../engine/format";
-import { Memo } from "../engine/memo";
 import { Scan } from "../engine/scan";
 import { Aux } from "../utils/auxiliary";
-import { Config } from "../utils/config";
 import { EventEmitter } from "../utils/event-emitter";
-import { FileEdit } from "../utils/file-edit";
+import { Format } from "../utils/format";
 import { Janitor } from "../utils/janitor";
 import { TreeItem } from "./tree-item";
 import { TreeProvider } from "./tree-provider";
@@ -26,26 +22,14 @@ export function initTree() {
 		provider.refresh(expand);
 	}
 
-	Config.onChange("defaultView", (view: "tag" | "file") => {
-		provider.view = view;
-		updateView();
-	});
-
-	async function completeItem(
-		item: TreeItem.TagItem<"primary"> | TreeItem.FileItem<"primary">,
-		options?: {
-			noConfirm?: boolean;
-		},
-	): Promise<void> {
-		const { docs } = await (await item.complete(undefined, options)).apply();
-		if (docs.length === 0) return;
-
-		await Scan.docs(docs, { flush: true });
-		updateView();
-	}
-
 	Janitor.add(
 		explorer,
+
+		explorer.onDidChangeVisibility((ev) => {
+			if (ev.visible) {
+				void Scan.clean().then(() => updateView());
+			}
+		}),
 
 		EventEmitter.subscribe("Update", updateView),
 
@@ -87,55 +71,12 @@ export function initTree() {
 		commands.registerCommand(
 			"better-memo.navigateToFile",
 			(fileItem: TreeItem.FileItem<"primary" | "secondary">) => {
-				fileItem.navigate();
+				void fileItem.navigate();
 			},
 		),
 
-		commands.registerCommand("better-memo.completeTag", completeItem),
-		commands.registerCommand(
-			"better-memo.completeTagNoConfirm",
-			async (tagItem: TreeItem.TagItem<"primary">) => {
-				completeItem(tagItem, { noConfirm: true });
-			},
-		),
-
-		commands.registerCommand("better-memo.completeFile", completeItem),
-		commands.registerCommand(
-			"better-memo.completeFileNoConfirm",
-			async (fileItem: TreeItem.FileItem<"primary">) => {
-				completeItem(fileItem, { noConfirm: true });
-			},
-		),
-
-		commands.registerCommand("better-memo.completeAllMemos", async () => {
-			const items = provider.items;
-			const memos = Memo.data.memos;
-
-			const completionDetail = `Are you sure you want to proceed?
-					This will mark all ${memos.length} memo${Aux.string.plural(memos)} ${
-				provider.view === "tag" ? "of" : "in"
-			} ${items.length} ${provider.view}${Aux.string.plural(
-				items,
-			)} as completed.`;
-
-			const confirm = await window.showInformationMessage(
-				"Confirm Completion of Memos",
-				{ modal: true, detail: completionDetail },
-				"Yes",
-			);
-			if (!confirm) return;
-
-			const edit = new FileEdit.Edit();
-			for (const item of items) await item.complete(edit, { noConfirm: true });
-			await edit.apply();
-
-			await Scan.docs(edit.docs, { flush: true });
-			updateView();
-		}),
-
-		commands.registerCommand(
-			"better-memo.navigateToMemo",
-			(navigate: () => void) => navigate(),
+		commands.registerCommand("better-memo.navigateToMemo", (navigate: () => void) =>
+			navigate(),
 		),
 
 		commands.registerCommand(

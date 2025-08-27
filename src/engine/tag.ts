@@ -1,14 +1,17 @@
 import { ThemeColor } from "vscode";
-
 import { Colors } from "../utils/colors";
 import { Config } from "../utils/config";
 import { Lang } from "./lang";
 import { Memo } from "./memo";
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Tag {
-	type TagColors = { [tag: string]: ThemeColor };
+	type TagColors = Record<string, ThemeColor>;
 
 	export let data: { tags: string[]; colors: TagColors } = getData();
+	export function update(): void {
+		data = getData();
+	}
 
 	export function isValid(tag: string): boolean {
 		return RegExp(`^[^\\s${Lang.data.closersRE}!]+$`).test(tag);
@@ -19,9 +22,7 @@ export namespace Tag {
 
 		for (const { tag } of Memo.data.memos) colors[tag] = Colors.hash(tag);
 
-		const customTags = Config.get("customTags") as {
-			[tag: string]: string;
-		};
+		const customTags = Config.get<Record<string, string>>("savedTags");
 
 		for (let [tag, hex] of Object.entries(customTags)) {
 			[tag, hex] = [tag.trim().toUpperCase(), hex.trim()];
@@ -30,7 +31,6 @@ export namespace Tag {
 
 			colors[tag] = Colors.interpolate(hex);
 		}
-
 		const tags = Object.keys(colors);
 
 		return { tags, colors };

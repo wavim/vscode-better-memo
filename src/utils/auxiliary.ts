@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-namespace */
+
 export namespace Aux.object {
 	/**
 	 * Similar to Object.groupBy()
@@ -5,10 +7,7 @@ export namespace Aux.object {
 	 * @param grouper callback for group keys
 	 * @returns `grouper(obj)` as keys and corresponding objects as values
 	 */
-	export function group<O extends { [key: string]: any }, V>(
-		objs: O[],
-		grouper: (obj: O, i: number) => V,
-	): Map<V, O[]> {
+	export function group<O, V>(objs: O[], grouper: (obj: O, i: number) => V): Map<V, O[]> {
 		const groups = new Map<V, O[]>();
 
 		objs.forEach((obj, i) => {
@@ -46,7 +45,7 @@ export namespace Aux.string {
 	 * @param countable number or object with `.length` property
 	 * @returns "s" if countable is plural or else ""
 	 */
-	export const plural = (countable: number | any[]) => {
+	export const plural = (countable: number | unknown[]) => {
 		return (typeof countable === "number" ? countable : countable.length) === 1
 			? ""
 			: "s";

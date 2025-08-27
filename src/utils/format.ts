@@ -1,9 +1,9 @@
 import { TextDocument } from "vscode";
+import { Lang } from "../engine/lang";
+import { Memo } from "../engine/memo";
+import { FileEdit } from "./file-edit";
 
-import { FileEdit } from "../utils/file-edit";
-import { Memo } from "./memo";
-import { Lang } from "./lang";
-
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Format {
 	export async function formatDoc(doc: TextDocument): Promise<void> {
 		const list = Memo.inDoc(doc);
@@ -32,11 +32,11 @@ export namespace Format {
 		const delimiters = Lang.data.delimiters[lang];
 
 		const headPad = delimiters.open.endsWith(" ") ? "" : " ";
-		const tailPad = delimiters.close ? " " : "";
+		const tailPad = delimiters.exit ? " " : "";
 
 		return {
 			head: `${delimiters.open}${headPad}MO `,
-			tail: `${tailPad}${delimiters.close ?? ""}`,
+			tail: `${tailPad}${delimiters.exit ?? ""}`,
 		};
 	}
 }

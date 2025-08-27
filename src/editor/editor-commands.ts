@@ -8,27 +8,31 @@ import {
 	ThemeIcon,
 	window,
 } from "vscode";
-
 import { Doc } from "../engine/doc";
-import { Format } from "../engine/format";
 import { Memo } from "../engine/memo";
 import { Scan } from "../engine/scan";
 import { Tag } from "../engine/tag";
 import { Aux } from "../utils/auxiliary";
 import { EventEmitter } from "../utils/event-emitter";
+import { Format } from "../utils/format";
 import { Janitor } from "../utils/janitor";
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace EditorCommands {
 	export function init(): void {
 		Janitor.add(
 			commands.registerTextEditorCommand(
 				"better-memo.newMemoOnLine",
-				newMemoOnLine,
+				(editor) => {
+					void newMemoOnLine(editor);
+				},
 			),
 
 			commands.registerTextEditorCommand(
 				"better-memo.completeMemoNearCursor",
-				completeMemoNearCursor,
+				(editor) => {
+					void completeMemoNearCursor(editor);
+				},
 			),
 
 			commands.registerTextEditorCommand(
@@ -47,7 +51,7 @@ export namespace EditorCommands {
 		if (!Doc.includes(doc)) return;
 
 		const tags = Tag.data.tags.sort();
-		const occurrence: { [tag: string]: number } = {};
+		const occurrence: Record<string, number> = {};
 
 		for (const tag of tags) {
 			occurrence[tag] ??= 0;
@@ -56,10 +60,7 @@ export namespace EditorCommands {
 
 		const items = tags
 			.sort((a, b) => occurrence[b] - occurrence[a])
-			.map((tag) => ({
-				label: tag,
-				iconPath: new ThemeIcon("bookmark"),
-			}));
+			.map((tag) => ({ label: tag, iconPath: new ThemeIcon("bookmark") }));
 
 		const picker = window.createQuickPick();
 		picker.items = items;
@@ -73,7 +74,9 @@ export namespace EditorCommands {
 		} = {
 			picked: undefined,
 			disposables: [],
-			disposePicker() {},
+			disposePicker() {
+				/* empty */
+			},
 		};
 
 		picker.onDidChangeValue(
@@ -83,7 +86,10 @@ export namespace EditorCommands {
 				if (items.map((item) => item.label).includes(tag)) return;
 
 				picker.items = Tag.isValid(tag)
-					? items.concat({ label: tag, iconPath: new ThemeIcon("bookmark") })
+					? items.concat({
+							label: tag,
+							iconPath: new ThemeIcon("bookmark"),
+						})
 					: items;
 			},
 			undefined,
@@ -187,9 +193,7 @@ export namespace EditorCommands {
 				doc.lineAt(line).firstNonWhitespaceCharacterIndex ===
 					target.meta.start.character;
 
-			const start = removeLine
-				? doc.lineAt(line).range.start
-				: target.meta.start;
+			const start = removeLine ? doc.lineAt(line).range.start : target.meta.start;
 			const end = removeLine ? new Position(line + 1, 0) : target.meta.end;
 
 			completed.push(target);
@@ -204,9 +208,7 @@ export namespace EditorCommands {
 		EventEmitter.emit("Update");
 	}
 
-	function navigateToMemo(
-		target: "prev" | "next",
-	): (editor: TextEditor) => void {
+	function navigateToMemo(target: "prev" | "next"): (editor: TextEditor) => void {
 		return (editor: TextEditor) => {
 			const doc = editor.document;
 			if (!Doc.includes(doc)) return;

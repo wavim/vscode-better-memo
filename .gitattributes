@@ -1,3 +1,0 @@
-*.cjs linguist-detectable=false
-*.mjs linguist-detectable=false
-tools/vscode_colors/themes/*.css linguist-detectable=false

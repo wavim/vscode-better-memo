@@ -1,12 +1,16 @@
 /**
  * One-way inner/cross-module emmiter mainly used for decoupling
  */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace EventEmitter {
 	/**
 	 * Class that could be disposed to stop event listening
 	 */
 	export class Disposable {
-		constructor(readonly event: string, readonly id: number) {}
+		constructor(
+			readonly event: string,
+			readonly id: number,
+		) {}
 
 		/**
 		 * Unsubscribes from `this.event`
@@ -21,14 +25,14 @@ export namespace EventEmitter {
 		}
 	}
 
-	const eventCallbacksMap: Map<string, ((...args: any) => any)[]> = new Map();
+	const eventCallbacksMap = new Map<string, ((...args: unknown[]) => unknown)[]>();
 
 	/**
 	 * @param callback callback function evoked on `event`'s dispatch
 	 */
 	export function subscribe(
 		event: string,
-		callback: (...args: any) => any,
+		callback: (...args: unknown[]) => unknown,
 	): Disposable {
 		if (!eventCallbacksMap.has(event)) eventCallbacksMap.set(event, []);
 		eventCallbacksMap.get(event)!.push(callback);
@@ -39,7 +43,7 @@ export namespace EventEmitter {
 	/**
 	 * @param args arguments to pass to subscribed callback functions
 	 */
-	export function emit(event: string, ...args: any): void {
+	export function emit(event: string, ...args: unknown[]): void {
 		for (const callback of eventCallbacksMap.get(event) ?? []) {
 			callback(...args);
 		}

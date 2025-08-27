@@ -1,16 +1,22 @@
 import { TextDocument, workspace } from "vscode";
-
 import { Aux } from "../utils/auxiliary";
 import { Config } from "../utils/config";
 import { Lang } from "./lang";
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Doc {
-	type DocMeta = { version: number; lang: string };
+	interface DocMeta {
+		version: number;
+		lang: string;
+	}
 
-	export let data: {
-		docs: TextDocument[];
-		metas: Map<string, DocMeta>;
-	} = { docs: [], metas: new Map() };
+	export let data: { docs: TextDocument[]; metas: Map<string, DocMeta> } = {
+		docs: [],
+		metas: new Map(),
+	};
+	export async function update(): Promise<void> {
+		data = await getData();
+	}
 
 	export function includes(doc: TextDocument): boolean {
 		return data.metas.has(doc.fileName);
@@ -29,15 +35,16 @@ export namespace Doc {
 	}
 
 	export async function getData(): Promise<typeof data> {
-		const watch = `{${Config.get("watch").join(",")}}`;
-		const ignore = `{${Config.get("ignore").join(",")}}`;
+		const ignore = `{${Config.get<string[]>("ignore").join(",")}}`;
 
-		const uris = await workspace.findFiles(watch, ignore);
+		const uris = await workspace.findFiles("**/*", ignore);
 		const textDocs = (
 			await Aux.async.map(uris, async (uri) => {
 				try {
 					return await workspace.openTextDocument(uri);
-				} catch {}
+				} catch {
+					/* empty */
+				}
 			})
 		).filter((opened) => opened !== undefined);
 

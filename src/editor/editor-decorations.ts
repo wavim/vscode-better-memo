@@ -1,16 +1,16 @@
 import { Range, TextEditor, TextEditorDecorationType, window } from "vscode";
-
 import { Memo } from "../engine/memo";
 import { Tag } from "../engine/tag";
 import { EventEmitter } from "../utils/event-emitter";
 import { Janitor } from "../utils/janitor";
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace EditorDecorations {
 	export function init(): void {
 		Janitor.add(
 			window.onDidChangeVisibleTextEditors(decorateEditors),
 
-			EventEmitter.subscribe("Update", decorateEditors),
+			EventEmitter.subscribe("Update", () => decorateEditors()),
 		);
 
 		decorateEditors();
@@ -18,11 +18,8 @@ export namespace EditorDecorations {
 
 	const decorations: {
 		memo: TextEditorDecorationType;
-		tags: { [tag: string]: TextEditorDecorationType };
-	} = {
-		memo: window.createTextEditorDecorationType({}),
-		tags: {},
-	};
+		tags: Record<string, TextEditorDecorationType>;
+	} = { memo: window.createTextEditorDecorationType({}), tags: {} };
 	function disposeDecorations(): void {
 		decorations.memo.dispose();
 
@@ -30,20 +27,16 @@ export namespace EditorDecorations {
 		decorations.tags = {};
 	}
 
-	function decorateEditors(
-		editors: readonly TextEditor[] = window.visibleTextEditors,
-	): void {
+	function decorateEditors(editors: readonly TextEditor[] = window.visibleTextEditors): void {
 		disposeDecorations();
 
-		decorations.memo = window.createTextEditorDecorationType({
-			fontWeight: "800",
-		});
+		decorations.memo = window.createTextEditorDecorationType({ fontWeight: "600" });
 
 		for (const editor of editors) {
 			const memos = Memo.inDoc(editor.document);
 
 			const memoRanges: Range[] = [];
-			const tagRanges: Map<TextEditorDecorationType, Range[]> = new Map();
+			const tagRanges = new Map<TextEditorDecorationType, Range[]>();
 
 			for (const memo of memos) {
 				memoRanges.push(new Range(memo.meta.start, memo.meta.end));
@@ -54,7 +47,7 @@ export namespace EditorDecorations {
 				});
 				const tagDecor = decorations.tags[tag];
 
-				const head = memo.raw.match(/^.*?mo[\t ]+/i)![0];
+				const head = /^.*?mo[\t ]+/i.exec(memo.raw)![0];
 				const tagStart = memo.meta.start.translate(0, head.length);
 				const tagEnd = tagStart.translate(0, memo.tag.length);
 

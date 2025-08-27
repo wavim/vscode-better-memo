@@ -4,6 +4,7 @@ import { Position, Range, TextDocument, window, workspace } from "vscode";
  * Handles complicated logic of hybrid file editing with Node.fs and {@link workspace.fs},
  * this is due to how vscode requires editors to be open when using {@link workspace.fs}
  */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace FileEdit {
 	/**
 	 * Specifies a text range [`start`, `end`) to get modified
@@ -21,7 +22,7 @@ export namespace FileEdit {
 	 * using original doc's range is sufficient
 	 */
 	export class Edit {
-		private edits: Map<TextDocument, Edits> = new Map();
+		private edits = new Map<TextDocument, Edits>();
 
 		get docs(): TextDocument[] {
 			return Array.from(this.edits.keys());
@@ -30,11 +31,7 @@ export namespace FileEdit {
 		/**
 		 * Replace text in `range`, `range`.end is not included
 		 */
-		replace(
-			doc: TextDocument,
-			range: EditRange | Range,
-			replace: string,
-		): this {
+		replace(doc: TextDocument, range: EditRange | Range, replace: string): this {
 			if (range instanceof Range) range = [range.start, range.end];
 
 			if (!this.edits.has(doc)) this.edits.set(doc, []);
@@ -57,7 +54,9 @@ export namespace FileEdit {
 			for (const [doc, edits] of this.edits.entries()) {
 				try {
 					await this.editDoc(doc, edits);
-				} catch {}
+				} catch {
+					/* empty */
+				}
 			}
 			return this;
 		}
@@ -75,13 +74,16 @@ export namespace FileEdit {
 			let text = doc.getText();
 			let delta = 0;
 
-			for (let { range, replace: edit } of edits) {
+			for (const { range, replace } of edits) {
 				let [start, end] = range;
 				if (typeof start !== "number") start = doc.offsetAt(start);
 				if (typeof end !== "number") end = doc.offsetAt(end);
 
-				text = text.slice(0, start - delta) + edit + text.slice(end - delta);
-				delta += end - start - edit.length;
+				text =
+					text.slice(0, start - delta) +
+					replace +
+					text.slice(end - delta);
+				delta += end - start - replace.length;
 			}
 
 			await workspace.fs.writeFile(doc.uri, new TextEncoder().encode(text));

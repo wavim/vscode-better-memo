@@ -2,7 +2,7 @@
 	"name": "better-memo",
 	"displayName": "Better Memo",
 	"description": "Automatic Comment Curation for Developers",
-	"version": "3.0.17",
+	"version": "4.0.0",
 	"publisher": "carbonsoda",
 	"author": {
 		"name": "David W."
@@ -10,13 +10,9 @@
 	"homepage": "https://marketplace.visualstudio.com/items?itemName=carbonsoda.better-memo",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/CarbonicSoda/vscode-better-memo"
+		"url": "https://github.com/wavim/vscode-better-memo"
 	},
 	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/CarbonicSoda/vscode-better-memo/issues",
-		"email": "carbonsoda@outlook.com"
-	},
 	"engines": {
 		"vscode": "^1.80.0"
 	},
@@ -61,13 +57,6 @@
 				"category": "Better Memo"
 			},
 			{
-				"command": "better-memo.completeAllMemos",
-				"title": "Complete All Memos",
-				"enablement": "better-memo.init && !better-memo.noMemos",
-				"icon": "$(checklist)",
-				"category": "Better Memo"
-			},
-			{
 				"command": "better-memo.toggleFold",
 				"title": "Toggle Fold",
 				"enablement": "better-memo.init && view == better-memo.memoExplorer && !better-memo.noMemos",
@@ -79,32 +68,6 @@
 				"title": "Navigate to File",
 				"enablement": "view == better-memo.memoExplorer && viewItem == file",
 				"icon": "$(go-to-file)",
-				"category": "Better Memo"
-			},
-			{
-				"command": "better-memo.completeTag",
-				"title": "Complete All Memos of Tag",
-				"enablement": "view == better-memo.memoExplorer && better-memo.explorerView == tag && viewItem == tag",
-				"icon": "$(check-all)",
-				"category": "Better Memo"
-			},
-			{
-				"command": "better-memo.completeTagNoConfirm",
-				"title": "Complete All Memos of Tag",
-				"enablement": "view == better-memo.memoExplorer && better-memo.explorerView == tag && viewItem == tag",
-				"category": "Better Memo"
-			},
-			{
-				"command": "better-memo.completeFile",
-				"title": "Complete All Memos in File",
-				"enablement": "view == better-memo.memoExplorer && better-memo.explorerView == file && viewItem == file",
-				"icon": "$(check-all)",
-				"category": "Better Memo"
-			},
-			{
-				"command": "better-memo.completeFileNoConfirm",
-				"title": "Complete All Memos in File",
-				"enablement": "view == better-memo.memoExplorer && better-memo.explorerView == file && viewItem == file",
 				"category": "Better Memo"
 			},
 			{
@@ -218,14 +181,9 @@
 					"group": "navigation@2"
 				},
 				{
-					"command": "better-memo.completeAllMemos",
-					"when": "better-memo.init && view == better-memo.memoExplorer && !better-memo.noMemos",
-					"group": "navigation@3"
-				},
-				{
 					"command": "better-memo.toggleFold",
 					"when": "better-memo.init && view == better-memo.memoExplorer && !better-memo.noMemos",
-					"group": "navigation@4"
+					"group": "navigation@3"
 				}
 			],
 			"view/item/context": [
@@ -233,24 +191,6 @@
 					"command": "better-memo.navigateToFile",
 					"when": "view == better-memo.memoExplorer && viewItem == file",
 					"group": "inline@1"
-				},
-				{
-					"command": "better-memo.completeTag",
-					"when": "view == better-memo.memoExplorer && better-memo.explorerView == tag && viewItem == tag",
-					"group": "inline@1"
-				},
-				{
-					"command": "better-memo.completeTagNoConfirm",
-					"when": "view == better-memo.memoExplorer && better-memo.explorerView == tag && viewItem == tag"
-				},
-				{
-					"command": "better-memo.completeFile",
-					"when": "view == better-memo.memoExplorer && better-memo.explorerView == file && viewItem == file",
-					"group": "inline@2"
-				},
-				{
-					"command": "better-memo.completeFileNoConfirm",
-					"when": "view == better-memo.memoExplorer && better-memo.explorerView == file && viewItem == file"
 				},
 				{
 					"command": "better-memo.completeMemo",
@@ -272,12 +212,12 @@
 			},
 			{
 				"view": "better-memo.memoExplorer",
-				"contents": "Memo Explorer is loading.\nIf this is taking too long, [inspect configurations](command:workbench.action.openSettings?[\"better-memo\"]).",
+				"contents": "Memo Explorer is loading.\nIf this is taking too long, [inspect configurations](command:workbench.action.openSettings?[\"betterMemo\"]).",
 				"when": "workspaceFolderCount != 0 && !better-memo.init"
 			},
 			{
 				"view": "better-memo.memoExplorer",
-				"contents": "Oops, cannot spot any memos throughout the universe.\nConsider spicing up the place with some memos!\nIf this is not intended, \n[Refresh Explorer](command:better-memo.refresh)\nor [inspect configurations](command:workbench.action.openSettings?[\"better-memo\"]).",
+				"contents": "Oops, cannot spot any memos throughout the universe.\nConsider spicing up the place with some memos!\nIf this is not intended, \n[Refresh Explorer](command:better-memo.refresh)\nor [inspect configurations](command:workbench.action.openSettings?[\"betterMemo\"]).",
 				"when": "workspaceFolderCount != 0 && better-memo.init && better-memo.noMemos"
 			}
 		],
@@ -285,91 +225,51 @@
 			{
 				"title": "Better Memo",
 				"properties": {
-					"better-memo.customTags": {
+					"betterMemo.savedTags": {
 						"order": 1,
-						"title": "Custom Tags",
 						"type": "object",
-						"uniqueItems": true,
 						"additionalProperties": {
 							"type": "string",
-							"pattern": "(?:^\\s*#?[0-9a-fA-F]{6}\\s*$)|(?:^\\s*#?[0-9a-fA-F]{3}\\s*$)"
+							"pattern": "^\\s*#?[0-9a-fA-F]{3}\\s*$|^\\s*#?[0-9a-fA-F]{6}\\s*$"
 						},
-						"markdownDescription": "Defines custom colors for specified tags.\nAccepted formats are **#FFFFFF** & **#FFF**, case insensitive and **#** could be omitted.\n\nSpecified tags will always be in the *New Memo on Line* tag picker.",
 						"default": {
-							"TODO": "#0F0",
 							"FIX": "#F00",
-							"DEV": "#70F"
-						}
+							"TODO": "#0F0",
+							"REFACTOR": "#00F"
+						},
+						"description": "Save custom tags for convenience."
 					},
-					"better-memo.customLangs": {
+					"betterMemo.customLanguages": {
 						"order": 2,
-						"title": "Custom Languages",
 						"type": "object",
 						"additionalProperties": {
-							"type": "object"
+							"type": "object",
+							"properties": {
+								"open": {
+									"type": "string"
+								},
+								"exit": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"open"
+							]
 						},
-						"markdownDescription": "Defines custom languages to support.\n\nThe key being the languageid (via status-bar language mode picker e.g. `bat` and `csharp`), with values being the comment format in it e.g. `{ \"open\": \"//\" }` and `{ \"open\": \"/*\", \"close\": \"*/\" }`."
+						"description": "Custom languages to support, keyed with language identifier (in status bar language mode e.g. bat)."
 					},
-					"better-memo.defaultView": {
+					"betterMemo.ignore": {
 						"order": 3,
-						"title": "Default View",
-						"type": "string",
-						"enum": [
-							"tag",
-							"file"
-						],
-						"enumDescriptions": [
-							"Group primarily with memo tags.",
-							"Group primarily with memo files."
-						],
-						"description": "Determines how items are grouped in the explorer by default.",
-						"default": "tag"
-					},
-					"better-memo.watch": {
-						"order": 4,
-						"title": "Watch",
 						"type": "array",
 						"items": {
 							"type": "string"
 						},
-						"markdownDescription": "Configures memo fetcher file watch glob pattern, for format see [glob pattern reference](https://aka.ms/vscode-glob-patterns/).",
-						"default": [
-							"**/*"
-						],
-						"uniqueItems": true
-					},
-					"better-memo.ignore": {
-						"order": 5,
-						"title": "Ignore",
-						"type": "array",
-						"items": {
-							"type": "string"
-						},
-						"markdownDescription": "Configures memo fetcher file ignore glob pattern, for format see [glob pattern reference](https://aka.ms/vscode-glob-patterns/).",
 						"default": [
 							"**/node_modules",
-							"**/out",
-							"**/dist"
+							"**/dist",
+							"**/out"
 						],
-						"uniqueItems": true
-					},
-					"better-memo.scanDelay": {
-						"order": 6,
-						"title": "Scan Delay",
-						"type": "integer",
-						"minimum": 100,
-						"maximum": 10000,
-						"description": "Configures the delay between document scans, which scans the current active document, in ms.",
-						"default": 500
-					},
-					"better-memo.cleanScanDelay": {
-						"order": 7,
-						"title": "Clean Scan Delay",
-						"type": "integer",
-						"minimum": 10000,
-						"maximum": 1000000,
-						"description": "Configures the delay between clean rescans, which prevents potential event listener failures, in ms.",
-						"default": 60000
+						"description": "Files to ignore by fetcher."
 					}
 				}
 			}
@@ -392,17 +292,20 @@
 		"run-in-browser": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. ."
 	},
 	"devDependencies": {
+		"@eslint/js": "^9.34.0",
+		"@stylistic/eslint-plugin": "^5.2.3",
 		"@types/node": "~20.17.57",
 		"@types/vscode": "^1.80.0",
-		"@typescript-eslint/eslint-plugin": "^8.33.1",
-		"@typescript-eslint/parser": "^8.33.1",
 		"@vscode/test-cli": "^0.0.10",
 		"@vscode/test-electron": "^2.5.2",
 		"@vscode/test-web": "^0.0.65",
 		"esbuild": "^0.25.5",
 		"eslint": "^9.28.0",
+		"eslint-config-prettier": "^10.1.8",
 		"npm-run-all": "^4.1.5",
-		"typescript": "^5.8.3"
+		"prettier": "^3.6.2",
+		"typescript": "^5.8.3",
+		"typescript-eslint": "^8.41.0"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
@@ -410,5 +313,5 @@
 			"esbuild"
 		]
 	},
-	"packageManager": "pnpm@10.11.0+sha512.6540583f41cc5f628eb3d9773ecee802f4f9ef9923cc45b69890fb47991d4b092964694ec3a4f738a420c918a333062c8b925d312f42e4f0c263eb603551f977"
+	"packageManager": "pnpm@10.15.0+sha512.486ebc259d3e999a4e8691ce03b5cac4a71cbeca39372a9b762cb500cfdf0873e2cb16abe3d951b1ee2cf012503f027b98b6584e4df22524e0c7450d9ec7aa7b"
 }

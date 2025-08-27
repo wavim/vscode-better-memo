@@ -1,11 +1,11 @@
 import { Position, TextDocument, workspace } from "vscode";
-
 import { Aux } from "../utils/auxiliary";
 import { Doc } from "./doc";
 import { Lang } from "./lang";
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Memo {
-	type MemoMeta = {
+	interface MemoMeta {
 		doc: TextDocument;
 		path: string;
 		lang: string;
@@ -13,8 +13,8 @@ export namespace Memo {
 		start: Position;
 		end: Position;
 		line: number;
-	};
-	export type Memo = {
+	}
+	export interface Memo {
 		raw: string;
 
 		tag: string;
@@ -22,12 +22,18 @@ export namespace Memo {
 		content: string;
 
 		meta: MemoMeta;
-	};
+	}
 
 	export let data: { memos: Memo[]; docmap: Map<string, Memo[]> } = {
 		memos: [],
 		docmap: new Map(),
 	};
+	export async function update(options?: {
+		rescan?: TextDocument[] | undefined;
+		flush?: boolean;
+	}): Promise<void> {
+		data = await getData(options);
+	}
 
 	export function ofTag(tag: string): Memo[] {
 		return data.memos.filter((memo) => memo.tag === tag);
@@ -43,7 +49,7 @@ export namespace Memo {
 	}): Promise<typeof data> {
 		const docmap: (typeof data)["docmap"] = options?.rescan
 			? data.docmap
-			: new Map();
+			: new Map<string, Memo[]>();
 
 		await Aux.async.map(options?.rescan ?? Doc.data.docs, async (doc) => {
 			if (options?.rescan && !Doc.includes(doc)) docmap.delete(doc.fileName);
@@ -62,7 +68,7 @@ export namespace Memo {
 		const path = workspace.asRelativePath(doc.uri);
 		const lang = doc.languageId;
 
-		let memos: Memo[] = [];
+		const memos: Memo[] = [];
 
 		const src = options?.flush
 			? new TextDecoder().decode(await workspace.fs.readFile(doc.uri))
@@ -87,20 +93,10 @@ export namespace Memo {
 
 			memos.push({
 				raw,
-
 				tag,
 				priority,
 				content,
-
-				meta: {
-					doc,
-					path,
-					lang,
-
-					start,
-					end,
-					line,
-				},
+				meta: { doc, path, lang, start, end, line },
 			});
 		}
 
@@ -113,9 +109,9 @@ export namespace Memo {
 		const delimiters = Lang.data.delimiters[lang];
 
 		const open = Aux.re.escape(delimiters.open);
-		const close = delimiters.close ? Aux.re.escape(delimiters.close) : "";
+		const close = delimiters.exit ? Aux.re.escape(delimiters.exit) : "";
 
-		const matchPattern = `(?<![${open}])${open}[\\t ]*mo[\\t ]+(?<tag>[^\\s${
+		const matchPattern = `${open}[\\t ]*mo[\\t ]+(?<tag>[^\\s${
 			Lang.data.closersRE
 		}!]+)[\\t ]*(?<priority>!*)(?<content>.*${close ? "?" : ""})${close}`;
 

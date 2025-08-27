@@ -1,19 +1,16 @@
 import { TextDocument, window } from "vscode";
-
 import { Doc } from "./doc";
 import { Lang } from "./lang";
 import { Memo } from "./memo";
 import { Tag } from "./tag";
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Scan {
 	export async function clean(): Promise<void> {
-		Lang.data = Lang.getData();
-
-		Doc.data = await Doc.getData();
-
-		Memo.data = await Memo.getData({ flush: true });
-
-		Tag.data = Tag.getData();
+		Lang.update();
+		await Doc.update();
+		await Memo.update({ flush: true });
+		Tag.update();
 	}
 
 	export async function filesChanged(): Promise<void> {
@@ -26,9 +23,8 @@ export namespace Scan {
 		const createdDocs = newDocs.filter((doc) => !docs.includes(doc));
 		const deletedDocs = docs.filter((doc) => !newDocs.includes(doc));
 
-		Memo.data = await Memo.getData({ rescan: createdDocs.concat(deletedDocs) });
-
-		Tag.data = Tag.getData();
+		await Memo.update({ rescan: createdDocs.concat(deletedDocs) });
+		Tag.update();
 	}
 
 	export async function doc(
@@ -37,12 +33,8 @@ export namespace Scan {
 	): Promise<boolean> {
 		if (!options?.flush && !Doc.isChanged(doc)) return false;
 
-		Memo.data = await Memo.getData({
-			rescan: [doc],
-			flush: options?.flush,
-		});
-
-		Tag.data = Tag.getData();
+		await Memo.update({ rescan: [doc], flush: options?.flush });
+		Tag.update();
 
 		return true;
 	}
@@ -52,18 +44,12 @@ export namespace Scan {
 		options?: { flush?: boolean },
 	): Promise<void> {
 		for (const doc of docs) {
-			Memo.data = await Memo.getData({
-				rescan: [doc],
-				flush: options?.flush,
-			});
+			await Memo.update({ rescan: [doc], flush: options?.flush });
 		}
-
-		Tag.data = Tag.getData();
+		Tag.update();
 	}
 
-	export async function activeDoc(options?: {
-		flush?: boolean;
-	}): Promise<boolean> {
+	export async function activeDoc(options?: { flush?: boolean }): Promise<boolean> {
 		const active = window.activeTextEditor?.document;
 		if (!active) return false;
 

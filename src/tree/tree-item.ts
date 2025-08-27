@@ -10,13 +10,12 @@ import {
 	window,
 	workspace,
 } from "vscode";
-
 import { Memo } from "../engine/memo";
 import { Tag } from "../engine/tag";
-import { Aux } from "../utils/auxiliary";
 import { Colors } from "../utils/colors";
 import { FileEdit } from "../utils/file-edit";
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace TreeItem {
 	export type PrimaryType = TagItem<"primary"> | FileItem<"primary">;
 
@@ -41,15 +40,13 @@ export namespace TreeItem {
 				expand === null
 					? TreeItemCollapsibleState.None
 					: expand
-					? TreeItemCollapsibleState.Expanded
-					: TreeItemCollapsibleState.Collapsed,
+						? TreeItemCollapsibleState.Expanded
+						: TreeItemCollapsibleState.Collapsed,
 			);
 		}
 	}
 
-	class InnerItem<
-		P extends undefined | InnerItem<undefined>,
-	> extends ExplorerItem<P> {
+	class InnerItem<P extends undefined | InnerItem<undefined>> extends ExplorerItem<P> {
 		children: (P extends undefined
 			? TagItem<"secondary"> | FileItem<"secondary">
 			: MemoItem<"tag" | "file">)[] = [];
@@ -62,32 +59,6 @@ export namespace TreeItem {
 			parent: P,
 		) {
 			super(label, expand, parent);
-		}
-
-		async complete(
-			edit: FileEdit.Edit = new FileEdit.Edit(),
-			options?: { noConfirm?: boolean },
-		): Promise<FileEdit.Edit> {
-			const memos = (
-				this.children as (TagItem<"secondary"> | FileItem<"secondary">)[]
-			).flatMap((child) => child.children);
-
-			if (!options?.noConfirm) {
-				const prompt = `Are you sure you want to proceed?
-					This will mark all ${memos.length} memo${Aux.string.plural(memos)} ${
-					this.contextValue === "tag" ? "of" : "in"
-				} the ${this.contextValue} ${this.label} as completed.`;
-
-				const confirm = await window.showInformationMessage(
-					"Confirm Completion of Memos",
-					{ modal: true, detail: prompt },
-					"Yes",
-				);
-				if (!confirm) return edit;
-			}
-
-			for (const memo of memos) memo.complete(edit);
-			return edit;
 		}
 	}
 
@@ -154,9 +125,9 @@ export namespace TreeItem {
 			this.description = `Ln ${memo.meta.line + 1}`;
 
 			this.tooltip = new MarkdownString(
-				`$(bookmark) ${memo.tag} $(file) ${memo.meta.path} $(dash) Ln ${
+				`$(bookmark) ${memo.tag} $(file) ${memo.meta.path} #${
 					memo.meta.line + 1
-				}\n\n---\n${memo.content === "" ? "Placeholder" : memo.content}`,
+				}\n\n---\n${memo.content === "" ? "Blank" : memo.content}`,
 				true,
 			);
 
@@ -165,8 +136,12 @@ export namespace TreeItem {
 					? new ThemeIcon("circle-filled", Tag.data.colors[memo.tag])
 					: new ThemeIcon(
 							"circle-outline",
-							Colors.interpolate([255, (1 - urgency) * 255, 0]),
-					  );
+							Colors.interpolate([
+								255,
+								(1 - urgency) * 255,
+								0,
+							]),
+						);
 		}
 
 		async navigate(): Promise<void> {

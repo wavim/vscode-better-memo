@@ -5,12 +5,10 @@ import {
 	TreeDataProvider,
 	EventEmitter as VSEventEmitter,
 } from "vscode";
-
 import { Doc } from "../engine/doc";
 import { Memo } from "../engine/memo";
 import { Tag } from "../engine/tag";
 import { Aux } from "../utils/auxiliary";
-import { Config } from "../utils/config";
 import { TreeItem } from "./tree-item";
 
 export class TreeProvider implements TreeDataProvider<TreeItem.ItemType> {
@@ -36,21 +34,18 @@ export class TreeProvider implements TreeDataProvider<TreeItem.ItemType> {
 
 	private $view: "tag" | "file" = "tag";
 
+	constructor() {
+		this.view = "tag";
+	}
+
 	get view(): typeof this.$view {
 		return this.$view;
 	}
+
 	set view(type: typeof this.$view) {
 		this.$view = type;
 
-		commands.executeCommand(
-			"setContext",
-			"better-memo.explorerView",
-			this.view,
-		);
-	}
-
-	constructor() {
-		this.view = Config.get("defaultView") as typeof this.view;
+		commands.executeCommand("setContext", "better-memo.explorerView", this.view);
 	}
 
 	items: TreeItem.PrimaryType[] = [];
@@ -77,10 +72,7 @@ export class TreeProvider implements TreeDataProvider<TreeItem.ItemType> {
 		this.flush();
 	}
 
-	private getItems(expand: {
-		primary: boolean;
-		secondary: boolean;
-	}): typeof this.items {
+	private getItems(expand: { primary: boolean; secondary: boolean }): typeof this.items {
 		return this.view === "tag"
 			? this.getTagViewItems(expand)
 			: this.getFileViewItems(expand);
@@ -119,9 +111,9 @@ export class TreeProvider implements TreeDataProvider<TreeItem.ItemType> {
 					tagItem,
 				);
 
-				memos
-					.sort((memoA, memoB) => memoA.meta.line - memoB.meta.line)
-					.sort((memoA, memoB) => memoB.priority - memoA.priority);
+				memos.sort(
+					(memoA, memoB) => memoA.meta.line - memoB.meta.line,
+				).sort((memoA, memoB) => memoB.priority - memoA.priority);
 
 				const maxPriority = memos[0].priority;
 
@@ -195,9 +187,9 @@ export class TreeProvider implements TreeDataProvider<TreeItem.ItemType> {
 					fileItem,
 				);
 
-				memos
-					.sort((memoA, memoB) => memoA.meta.line - memoB.meta.line)
-					.sort((memoA, memoB) => memoB.priority - memoA.priority);
+				memos.sort(
+					(memoA, memoB) => memoA.meta.line - memoB.meta.line,
+				).sort((memoA, memoB) => memoB.priority - memoA.priority);
 
 				const maxPriority = memos[0].priority;
 
