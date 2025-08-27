@@ -294,17 +294,17 @@
 	"devDependencies": {
 		"@eslint/js": "^9.34.0",
 		"@stylistic/eslint-plugin": "^5.2.3",
-		"@types/node": "~20.17.57",
+		"@types/node": "~20.17.58",
 		"@types/vscode": "^1.80.0",
 		"@vscode/test-cli": "^0.0.10",
 		"@vscode/test-electron": "^2.5.2",
 		"@vscode/test-web": "^0.0.65",
-		"esbuild": "^0.25.5",
-		"eslint": "^9.28.0",
+		"esbuild": "^0.25.9",
+		"eslint": "^9.34.0",
 		"eslint-config-prettier": "^10.1.8",
 		"npm-run-all": "^4.1.5",
 		"prettier": "^3.6.2",
-		"typescript": "^5.8.3",
+		"typescript": "^5.9.2",
 		"typescript-eslint": "^8.41.0"
 	},
 	"pnpm": {
